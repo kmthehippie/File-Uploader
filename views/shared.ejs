@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shared Folder</title>
+    <style>
+      body {
+        font-family: "Courier New", Courier, monospace;
+        margin: 0;
+      }
+      nav {
+        background: #027c49;
+        padding: 20px 10px;
+      }
+      nav ul {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 0;
+      }
+      nav li {
+        list-style-type: none;
+        display: inline-block;
+        margin: 0 10px 0 0;
+      }
+      nav a {
+        color: #fff;
+        font-size: 18px;
+        background-color: rgba(255, 255, 255, 0.2);
+        text-decoration: none;
+        padding: 10px;
+        display: block;
+      }
+      main,
+      header {
+        max-width: 960px;
+        margin: 30px auto;
+        padding: 0 10px;
+        color: #333;
+      }
+      .preview {
+        max-width: 200px;
+        max-height: 200px;
+      }
+      .file-div {
+        border: 1px solid black;
+        padding: 1rem;
+        margin: 1rem;
+        border-radius: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <ul>
+        <li>
+          <h1>KM</h1>
+        </li>
+        <li>
+          <a href="/">Home</a>
+        </li>
+        <% if (user) { %>
+        <li>
+          <a href="/system">My Files and Folders</a>
+        </li>
+        <li>
+          <a href="/profile">Profile</a>
+        </li>
+        <li>
+          <a href="/system/myshared">My Shared Folders</a>
+        </li>
+        <li>
+          <a href="/auth/logout">Logout</a>
+        </li>
+        <% } else { %>
+        <li>
+          <a href="/auth/login">Login</a>
+        </li>
+        <% } %>
+      </ul>
+    </nav>
+    <header>
+      <!-- Add shared folder -->
+      <h1>Shared Folder</h1>
+    </header>
+    <main>
+      <section>
+        <h2>Folder Name: <%=folder.title%></h2>
+        <%if(files.length === 0) { %>
+        <h3>There is no files in this folder</h3>
+        <%} %> <% files.forEach(file => { %>
+        <div class="file-div">
+          <h3><%=file.name %></h3>
+          <%if(file.link.includes(".png") || file.link.includes(".jpeg") ||
+          file.link.includes(".jpg")) {%>
+          <a href="<%=file.link%>"
+            ><img class="preview" src="<%=file.link%>" alt="<%=file.name%>"
+          /></a>
+          <%}%>
+          <p>
+            <a
+              href="<%=file.downloadLink%>"
+              download="<%=file.downloadName%>"
+              class="button"
+            >
+              Download <%=file.downloadName%>
+            </a>
+          </p>
+          <p><%=file.description%></p>
+          <p><%=file.size%> bytes</p>
+        </div>
+
+        <% } )%>
+      </section>
+    </main>
+  </body>
+</html>

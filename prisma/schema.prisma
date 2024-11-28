@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String   @id @default(uuid())
+  createdAt          DateTime @default(now())
+  email              String   @unique
+  password           String?
+  googleId           String?  @unique
+  githubId           String?  @unique
+  name               String?  @db.VarChar(255)
+  profilePicture     String?
+  googleAccessToken  String?
+  googleRefreshToken String?
+  githubAccessToken  String?
+  githubRefreshToken String?
+  createdFile        File[]   @relation("CreatedFile")
+  createdFolder      Folder[] @relation("CreatedFolder")
+  createdShare       Share[]  @relation("CreatedShare")
+  session            Session?
+
+  @@index([email])
+}
+
+model Session {
+  id        String   @id @unique @default(uuid())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?  @unique
+  data      String
+  expiresAt DateTime
+  sid       String   @unique
+
+  @@index([sid])
+}
+
+model Folder {
+  id         String  @id @unique @default(uuid())
+  title      String  @db.VarChar(255)
+  file       File[]  @relation("Folder")
+  uploader   User    @relation("CreatedFolder", fields: [uploaderId], references: [id])
+  uploaderId String
+  share      Share[] @relation("ShareFolder")
+}
+
+model File {
+  id           String   @id @unique @default(uuid())
+  createdAt    DateTime @default(now())
+  name         String   @db.VarChar(255)
+  description  String?
+  size         Int
+  link         String   @db.VarChar(255)
+  uploader     User     @relation("CreatedFile", fields: [uploaderId], references: [id])
+  uploaderId   String
+  folder       Folder   @relation("Folder", fields: [folderId], references: [id])
+  folderId     String
+  downloadLink String?
+  fileType     String?
+  downloadName String?
+
+  //Instead of using id uuid you can create the following:
+  // @@id([title, authorId])
+  @@index([name, createdAt, id, folderId])
+}
+
+model Share {
+  id        String   @id @unique @default(uuid())
+  createdAt DateTime @default(now())
+  folder    Folder   @relation("ShareFolder", fields: [folderId], references: [id])
+  folderId  String
+  creator   User     @relation("CreatedShare", fields: [creatorId], references: [id])
+  creatorId String
+  expiresAt DateTime
+}

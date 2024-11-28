@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <style>
+      body {
+        font-family: "Courier New", Courier, monospace;
+        margin: 0;
+      }
+      nav {
+        background: #027c49;
+        padding: 20px 10px;
+      }
+      nav ul {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 0;
+      }
+      nav li {
+        list-style-type: none;
+        display: inline-block;
+        margin: 0 10px 0 0;
+      }
+      nav a {
+        color: #fff;
+        font-size: 18px;
+        background: rgba(255, 255, 255, 0.2);
+        text-decoration: none;
+        padding: 10px;
+        display: block;
+      }
+      main,
+      header {
+        max-width: 960px;
+        margin: 30px auto;
+        padding: 0 10px;
+        color: #333;
+      }
+      .buttons{
+        margin-left: 1rem;
+      }
+      .google-btn {
+        
+        color: #fff;
+        text-decoration: none;
+        font-size: 18px;
+        padding: 10px;
+        background: #ff5353;
+      }
+      .github-btn {
+        text-decoration: none;
+        font-size: 18px;
+        padding: 10px;
+        background: #101018;
+      }
+       .normal-btn {
+        border: none;
+        color: #fff;
+        text-decoration: none;
+        font-size: 18px;
+        padding: 10px;
+        background: #027c49;
+      }
+      form{
+        padding: 1rem;
+        display: flex;
+      }
+      .right{
+        margin-left: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <ul> <li>
+          <h1>KM</h1>
+        </li>
+        <li><a href="/">Homepage</a></li>
+        <li><a href="/auth/register">Register</a></li>
+      </ul>
+    </nav>
+    <header>
+      <h1>Login using...</h1>
+    </header>
+    <main>
+    <form action="/log-in" method="POST">
+      <div class="left">
+      <label for="email">Email</label>
+      <input id="email" name="email" placeholder="email" type="text" />
+      </br>
+      </br>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" />
+      </div>
+      <div class="right">
+      <button class="normal-btn">Log In</button>
+      </div>
+    </form>
+
+    <div class="buttons">
+      <a class="normal-btn" href="/auth/register">Create An Account</a>
+      <a class="google-btn" href="/auth/google">Google+</a>
+      <a class="github-btn" href="/auth/github">Github+</a>
+    </div>
+    </main>
+  </body>
+  <script>
+    document.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      console.log(email, password);
+
+      try {
+        const res = await fetch(`/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        });
+        if (res.ok) {
+          window.location.href = "/";
+        }
+      } catch (err) {
+        console.error("Error creating user", err);
+      }
+    });
+  </script>
+</html>

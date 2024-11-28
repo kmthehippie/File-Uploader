@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register</title>
+    <style>
+      body {
+        font-family: "Courier New", Courier, monospace;
+        margin: 0;
+      }
+      nav {
+        background: #027c49;
+        padding: 20px 10px;
+      }
+      nav ul {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 0;
+      }
+      nav li {
+        list-style-type: none;
+        display: inline-block;
+        margin: 0 10px 0 0;
+      }
+      nav a {
+        color: #fff;
+        font-size: 18px;
+        background: rgba(255, 255, 255, 0.2);
+        text-decoration: none;
+        padding: 10px;
+        display: block;
+      }
+      main,
+      header {
+        max-width: 960px;
+        margin: 30px auto;
+        padding: 0 10px;
+        color: #333;
+      }
+      .buttons {
+        margin-left: 1rem;
+      }
+      .google-btn {
+        color: #fff;
+        text-decoration: none;
+        font-size: 18px;
+        padding: 10px;
+        background: #ff5353;
+      }
+      .github-btn {
+        text-decoration: none;
+        font-size: 18px;
+        padding: 10px;
+        background: #101018;
+      }
+      .normal-btn {
+        border: none;
+        color: #fff;
+        text-decoration: none;
+        font-size: 18px;
+        padding: 10px;
+        background: #027c49;
+      }
+      form {
+        padding: 1rem;
+      }
+      .right {
+        margin-left: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <ul>
+        <li>
+          <h1>KM</h1>
+        </li>
+        <li><a href="/auth/login">Login</a></li>
+        <li><a href="/">Homepage</a></li>
+      </ul>
+    </nav>
+    <header>
+      <h1>Register</h1>
+    </header>
+    <main>
+      <form action="/register" method="POST">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          name="email"
+          placeholder="yourname@email.com"
+          type="text"
+        />
+        <br />
+        <label for="name">Name</label>
+        <input id="name" name="name" type="name" placeholder="Display Name" />
+        <br />
+
+        <label for="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="*****"
+        />
+        <br />
+        <label for="cfmpassword">Confirm Password</label>
+        <input
+          id="cfmpassword"
+          name="cfmpassword"
+          type="password"
+          placeholder="******"
+        />
+        <br />
+        <!-- Profile Picture -->
+        <br />
+
+        <button>Register</button>
+        <p id="displayErr" style="display: none; color: red">Error</p>
+      </form>
+      <p id="error" style="display: none">Error</p>
+    </main>
+  </body>
+  <script>
+    document.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = {
+        email: document.getElementById("email").value,
+        name: document.getElementById("name").value,
+        password: document.getElementById("password").value,
+        cfmpassword: document.getElementById("cfmpassword").value,
+      };
+
+      try {
+        if (formData.cfmpassword !== formData.password) {
+          throw new Error("Passwords do not match");
+        }
+        const response = await fetch("/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.errors) {
+            const errorMessage = data.errors
+              .map((err) => `${err.field}: ${err.message}`)
+              .join("\n");
+            throw new Error(errorMessage);
+          } else {
+            throw new Error(data.message || "Registration failed");
+          }
+        }
+
+        window.location.href = "/auth/login";
+      } catch (err) {
+        const error = document.getElementById("displayErr");
+        error.style = "display: block; color: red";
+        error.textContent = `${err}`;
+        console.error(err);
+      }
+    });
+  </script>
+</html>

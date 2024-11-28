@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <title>System</title>
+    <style>
+      body {
+        font-family: "Courier New", Courier, monospace;
+        margin: 0;
+        position: relative;
+      }
+      nav {
+        background: #027c49;
+        padding: 20px 10px;
+      }
+      nav ul {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 0;
+      }
+      nav li {
+        list-style-type: none;
+        display: inline-block;
+        margin: 0 10px 0 0;
+      }
+      nav a {
+        color: #fff;
+        font-size: 18px;
+        background-color: rgba(255, 255, 255, 0.2);
+        text-decoration: none;
+        padding: 10px;
+        display: block;
+      }
+      main,
+      header {
+        max-width: 960px;
+        margin: 30px auto;
+        padding: 0 10px;
+        color: #333;
+      }
+      .folder {
+        cursor: pointer;
+        color: #007acc;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        /* margin: 5px 0;
+        padding-left: 2rem; */
+      }
+      .folder:hover {
+        color: #3498db;
+        transition: color 0.5s ease;
+      }
+      .file-empty {
+        margin-left: 20px;
+        color: rgb(0, 71, 0);
+        font-weight: 700;
+      }
+      .file {
+        margin-left: 20px;
+        color: #333;
+        padding: 2px;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+      }
+      .file:hover {
+        color: #007acc;
+        transition: color 0.5s ease;
+      }
+      .form {
+        display: flex;
+        flex-direction: column;
+        max-width: 100%;
+      }
+      button {
+        border: none;
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        background-color: rgb(0, 71, 0);
+        color: white;
+        border-radius: 5px;
+      }
+
+      .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        justify-content: center;
+        align-items: center;
+      }
+      .loading-spinner {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 2s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      #share-modal,
+      #share-link-modal {
+        background-color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 400px;
+        height: 300px;
+        padding: 1rem;
+      }
+      #bg-for-modals {
+        width: 100vw;
+        min-height: max(120%, 100vh);
+        height: auto;
+        overflow-y: auto;
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      #folder-modal {
+        background-color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 400px;
+        height: 300px;
+        padding: 1rem;
+      }
+      #file-modal {
+        background-color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 400px;
+        height: 500px;
+        padding: 1rem;
+      }
+      #close-btn {
+        position: absolute;
+        top: 0;
+        right: 0;
+        cursor: pointer;
+      }
+      .folder-header {
+        display: flex;
+        align-items: center;
+      }
+      .click-to-copy {
+        padding: 20px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        border-radius: 5px;
+        word-wrap: break-word;
+      }
+      .click-to-copy:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bg-for-modals" style="display: none"></div>
+    <div class="loading-overlay">
+      <div class="loading-spinner"></div>
+    </div>
+    <nav>
+      <ul>
+        <li>
+          <h1>KM</h1>
+        </li>
+        <li><a href="/">Homepage</a></li>
+        <li>
+          <a href="/profile">Profile</a>
+        </li>
+        <li>
+          <a href="/system/myshared">My Shared Folders</a>
+        </li>
+        <li><a class="logout-btn" href="/auth/logout">Logout</a></li>
+      </ul>
+    </nav>
+    <header>
+      <h1>My Folders and Files</h1>
+      <p>Here we have our folders and the files in those folders.</p>
+    </header>
+    <main>
+      <section style="width: 100vw">
+        <div class="folder-header">
+          <span
+            class="material-symbols-outlined"
+            onClick="toggleFolderModal()"
+            style="cursor: pointer; padding: 1rem"
+            data-toggle="tooltip"
+            title="Create New Folder"
+          >
+            create_new_folder
+          </span>
+          <h2>Folder/s</h2>
+        </div>
+
+        <% folders.forEach(folder => { %>
+        <div
+          class="folder-oneline"
+          style="
+            display: flex;
+            width: 80%;
+            max-width: 700px;
+            justify-content: space-between;
+            border: 1px solid black;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+          "
+        >
+          <div
+            class="folder"
+            onclick="toggleFiles('<%= folder.id %>')"
+            data-toggle="tooltip"
+            title="Open Folder"
+          >
+            <span class="material-symbols-outlined" style="padding-right: 5px">
+              folder
+            </span>
+            <%= folder.title %>
+          </div>
+          <div class="options">
+            <span
+              class="material-symbols-outlined"
+              style="cursor: pointer; padding-left: 1rem"
+              onclick="toggleNewFile()"
+              data-toggle="tooltip"
+              title="Add New File"
+            >
+              upload_file
+            </span>
+            <span
+              class="material-symbols-outlined"
+              style="cursor: pointer; padding-left: 1rem"
+              onclick="deleteFolder('<%=folder.id%>')"
+              data-toggle="tooltip"
+              title="Delete Folder"
+            >
+              delete
+            </span>
+            <span
+              class="material-symbols-outlined"
+              style="cursor: pointer; padding-left: 1rem"
+              data-toggle="tooltip"
+              title="Share Folder"
+              onclick="toggleShareModal('<%=folder.id%>', '<%=folder.title%>')"
+            >
+              share
+            </span>
+          </div>
+        </div>
+        <div id="files-<%= folder.id %>" style="display: none"></div>
+        <% }) %>
+        <div
+          id="errorModal"
+          style="
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+          "
+        >
+          <div
+            style="
+              margin: 15% auto;
+              padding: 20px;
+              background: white;
+              width: 300px;
+              text-align: center;
+              border-radius: 5px;
+            "
+          >
+            <h3>Error</h3>
+            <p id="errorMessage"></p>
+            <button onclick="closeModal()">Close</button>
+          </div>
+        </div>
+      </section>
+      <!-- Create new Folder Modal -->
+      <section
+        id="folder-modal"
+        style="
+          display: none;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translateX(-50%, -50%);
+        "
+      >
+        <span
+          class="material-symbols-outlined"
+          id="close-btn"
+          onClick="toggleFolderModal()"
+        >
+          close
+        </span>
+        <h2>Create Folder</h2>
+        <form
+          id="create-folder-form"
+          action="/system/folder/create"
+          method="POST"
+        >
+          <div class="form">
+            <label for="title">Folder Name</label>
+            <br />
+            <input
+              type="text"
+              id="title"
+              name="title"
+              placeholder="Folder Name"
+            />
+            <br />
+            <br />
+            <div class="modal-buttons">
+              <button type="submit">Create Folder</button>
+            </div>
+            <p id="create-folder-error" style="display: none">Error</p>
+          </div>
+        </form>
+      </section>
+      <!-- Create new File Modal -->
+      <section
+        id="file-modal"
+        style="
+          display: none;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        "
+      >
+        <h2>Upload File</h2>
+        <span
+          class="material-symbols-outlined"
+          id="close-btn"
+          onClick="toggleFileModal()"
+        >
+          close
+        </span>
+
+        <form id="create-file-form" action="/system/file/create" method="POST">
+          <div class="form">
+            <div class="select-folder">
+              <select name="folder" id="folder" required>
+                <option value="" disabled selected>Select a folder</option>
+                <% folders.forEach(folder => { %>
+                <option value="<%=folder.id%>"><%= folder.title %></option>
+                <% }) %>
+              </select>
+            </div>
+            <br />
+            <input type="file" id="upload-file" name="uploadFile" />
+            <br />
+
+            <label for="file-name">File Name <small>(Required)</small></label>
+            <input
+              type="text"
+              placeholder="File Name"
+              name="file-name"
+              maxlength="255"
+              id="file-name"
+            />
+            <label for="file-desc"
+              >File Description <small>(Optional)</small></label
+            >
+            <input
+              type="text"
+              placeholder="File Description"
+              name="file-desc"
+              id="file-desc"
+            />
+            <br />
+            <br />
+            <div class="modal-buttons">
+              <button type="submit">Upload New File</button>
+            </div>
+            <p id="create-file-error" style="display: none">Error</p>
+          </div>
+        </form>
+      </section>
+      <!-- Share Folder Modal -->
+      <section
+        id="share-modal"
+        style="
+          display: none;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        "
+      >
+        <h2>Share Folder</h2>
+        <span
+          class="material-symbols-outlined"
+          id="close-btn"
+          onClick="toggleShareModal()"
+        >
+          close
+        </span>
+
+        <form
+          id="create-share-form"
+          action="/system/share/create"
+          method="POST"
+        >
+          <p id="share-folder-title"></p>
+          <!-- Folder Title Display -->
+
+          <input type="hidden" id="share-folder-id" name="folderId" />
+          <!-- Folder ID -->
+
+          <label for="expiry">Expire after:</label>
+          <select name="expiry" id="expiry" required>
+            <option value="" disabled selected>Select expiration period</option>
+            <option value="1">1 Day</option>
+            <option value="2">2 Days</option>
+            <option value="3">3 Days</option>
+            <option value="4">4 Days</option>
+            <option value="5">5 Days</option>
+            <option value="6">6 Days</option>
+            <option value="7">7 Days</option>
+            <option value="8">8 Days</option>
+            <option value="9">9 Days</option>
+            <option value="10">10 Days</option>
+          </select>
+          <br />
+          <br />
+          <button type="submit">Create Share Link</button>
+        </form>
+      </section>
+      <!-- Share Link Modal -->
+      <section
+        id="share-link-modal"
+        style="
+          display: none;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        "
+      >
+        <h2>Share Folder</h2>
+        <span
+          class="material-symbols-outlined"
+          id="close-btn"
+          onClick="toggleShareLinkModal()"
+        >
+          close
+        </span>
+        <div id="share-link-content"><h2>Empty Div Here</h2></div>
+      </section>
+    </main>
+  </body>
+  <script>
+    function showLoading() {
+      document.querySelector(".loading-overlay").style.display = "flex";
+    }
+    function hideLoading() {
+      document.querySelector(".loading-overlay").style.display = "none";
+    }
+    // Toggle to CREATE NEW Folder
+    function toggleFolderModal() {
+      const folderModal = document.getElementById("folder-modal");
+      const modalBg = document.getElementById("bg-for-modals");
+
+      folderModal.style.display === "none"
+        ? (folderModal.style.display = "block")
+        : (folderModal.style.display = "none");
+      modalBg.style.display === "none"
+        ? (modalBg.style.display = "block")
+        : (modalBg.style.display = "none");
+    }
+    // Toggle to VIEW files
+    function toggleFileModal() {
+      const fileModal = document.getElementById("file-modal");
+      const modalBg = document.getElementById("bg-for-modals");
+      fileModal.style.display === "none"
+        ? (fileModal.style.display = "block")
+        : (fileModal.style.display = "none");
+      modalBg.style.display === "none"
+        ? (modalBg.style.display = "block")
+        : (modalBg.style.display = "none");
+    }
+    // Toggle to CREATE NEW file
+    function toggleNewFile() {
+      const fileNew = document.getElementById("file-modal");
+      const modalBg = document.getElementById("bg-for-modals");
+      fileNew.style.display === "none"
+        ? (fileNew.style.display = "block")
+        : (fileNew.style.display = "none");
+      modalBg.style.display === "none"
+        ? (modalBg.style.display = "block")
+        : (modalBg.style.display = "none");
+    }
+    // Error Modal
+    function showModal(message) {
+      const modal = document.getElementById("errorModal");
+      const errorMessage = document.getElementById("errorMessage");
+      errorMessage.textContent = message;
+      modal.style.display = "block";
+    }
+    function closeModal() {
+      const modal = document.getElementById("errorModal");
+      modal.style.display = "none";
+    }
+    // Toggle to Create SHARE Folder
+    function toggleShareModal(folderId, folderTitle) {
+      const shareModal = document.getElementById("share-modal");
+      const modalBg = document.getElementById("bg-for-modals");
+      console.log(folderId);
+      if (shareModal.style.display === "none" || !shareModal.style.display) {
+        document.getElementById(
+          "share-folder-title"
+        ).textContent = `Folder Title: ${folderTitle}`;
+        document.getElementById("share-folder-id").value = folderId;
+      }
+      shareModal.style.display === "none"
+        ? (shareModal.style.display = "block")
+        : (shareModal.style.display = "none");
+      modalBg.style.display === "none"
+        ? (modalBg.style.display = "block")
+        : (modalBg.style.display = "none");
+    }
+    // Toggle SHARE LINK modal
+    function toggleShareLinkModal() {
+      const shareLinkModal = document.getElementById("share-link-modal");
+      const modalBg = document.getElementById("bg-for-modals");
+      shareLinkModal.style.display === "none"
+        ? (shareLinkModal.style.display = "block")
+        : (shareLinkModal.style.display = "none");
+      modalBg.style.display === "none"
+        ? (modalBg.style.display = "block")
+        : (modalBg.style.display = "none");
+    }
+    function copyToClipboard(selector) {
+      const copyText = document.querySelector(selector);
+      if (copyText) {
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // For mobile devices
+        navigator.clipboard
+          .writeText(copyText.value)
+          .then(() => {
+            alert("Copied to clipboard: " + copyText.value);
+          })
+          .catch((err) => {
+            console.error("Failed to copy text: ", err);
+          });
+      }
+    }
+
+    // Function to Retrieve files
+    async function toggleFiles(folderId) {
+      const fileDiv = document.getElementById(`files-${folderId}`);
+      if (fileDiv.innerHTML.trim() === "") {
+        try {
+          // Fetch files for the specific folder
+          const response = await fetch(`/system/files?folderId=${folderId}`);
+          const files = await response.json();
+          if (!response.ok) {
+            throw new Error("Failed to fetch files.");
+          }
+          if (files.files.length !== 0) {
+            const finalFiles = files.files;
+            fileDiv.innerHTML = finalFiles
+              .map(
+                (file) =>
+                  `<div class="rendered-file" style="display: flex; justify-content: space-between; width: 400px;">
+                    <div>
+                      <a href="/system/file/${file.id}" class="file" data-toggle="tooltip" title="Open File">
+                      <span class="material-symbols-outlined" style="padding-right: 5px;">
+                      file_open
+                      </span>
+                    ${file.name} </a>
+                    </div>
+                    <div>
+                    <a href="${file.downloadLink}" download="${file.name}" class="button">
+                      <span class="material-symbols-outlined"> download </span>
+                    </a>
+                    </div>
+                  </div>`
+              )
+              .join("");
+
+            fileDiv.style.display = "block";
+          } else {
+            fileDiv.innerHTML = `<p class="file-empty">This folder is empty</p>`;
+            fileDiv.style.display = "block";
+          }
+        } catch (error) {
+          console.error("Error:", error.message);
+        }
+      } else {
+        fileDiv.style.display =
+          fileDiv.style.display === "none" ? "block" : "none";
+      }
+    }
+    // Function to Delete folder (With and without files in it)
+    async function deleteFolder(folderId) {
+      try {
+        const checkFilesExist = await fetch(
+          `/system/files?folderId=${folderId}`
+        );
+
+        const arrLength = await checkFilesExist.json();
+
+        //create a modal that shows up to ask if you confirm you want to delete all the files (showing all the files we found) attached to this folder?
+
+        if (arrLength.files.length !== 0) {
+          if (
+            confirm(
+              "This folder contains files! Are you sure you want to delete this folder? "
+            )
+          ) {
+            console.log("trying to fetch folderfile");
+            fetch(`/system/folder/file/delete/${folderId}`, {
+              method: "DELETE",
+            }).then((response) => {
+              if (response.ok) {
+                location.reload();
+              } else {
+                return response.json().then((data) => {
+                  throw new Error(data.message || "Failed to delete folder.");
+                });
+              }
+            });
+          }
+        } else {
+          fetch(`/system/folder/delete/${folderId}`, {
+            method: "DELETE",
+          }).then((response) => {
+            if (response.ok) {
+              location.reload();
+            } else {
+              return response.json().then((data) => {
+                throw new Error(data.message || "Failed to delete folder.");
+              });
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Error deleting folder: ", err);
+        showModal(err.message);
+      }
+    }
+
+    document
+      .getElementById("create-folder-form")
+      .addEventListener("submit", async function (e) {
+        e.preventDefault();
+        try {
+          const formData = {
+            title: document.getElementById("title").value,
+          };
+          if (formData.title.length < 3) {
+            throw new Error("Title must have at least 3 characters");
+          }
+          const response = await fetch("/system/folder/create", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          });
+
+          const data = await response.json();
+
+          const errors = data.errors
+            ? data.errors
+                .map((err) => `${err.field}: ${err.message}`)
+                .join("\n")
+            : data.message || "Create Folder Failed";
+          if (!response.ok || !data.success) {
+            throw new Error(`Error Creating Folder ${errors}`);
+          }
+        } catch (err) {
+          hideLoading();
+          document.getElementById("create-folder-error").textContent = err;
+          document.getElementById("create-folder-error").style.display =
+            "block";
+          return;
+        } finally {
+          hideLoading();
+        }
+
+        window.location.reload();
+      });
+
+    document
+      .getElementById("create-file-form")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        const folderField = document.getElementById("folder");
+        const fileField = document.getElementById("upload-file");
+        const nameField = document.getElementById("file-name");
+        const descField = document.getElementById("file-desc") || null;
+        formData.append("folder", folderField.value);
+        formData.append("uploadFile", fileField.files[0]);
+        formData.append("name", nameField.value);
+        if (descField.value.trim()) {
+          formData.append("description", descField.value);
+        }
+        try {
+          showLoading();
+          const response = await fetch("/system/file/create", {
+            method: "POST",
+            body: formData,
+          });
+          const result = await response.json();
+          console.log(result);
+          const errors = result.errors
+            ? result.errors
+                .map((err) => `${err.field}: ${err.message}`)
+                .join("\n")
+            : result.message || "Create File Failed";
+          if (!response.ok || !result.success) {
+            throw new Error(`Error Creating File ${errors}`);
+          }
+        } catch (err) {
+          hideLoading();
+          document.getElementById(
+            "create-file-error"
+          ).textContent = `Make sure your file type is jpeg/jpg/png/gif/pdf/mp4. Error: ${err}`;
+          document.getElementById("create-file-error").style.display = "block";
+          document.getElementById("create-file-error").style.color = "red";
+          return;
+        } finally {
+          hideLoading();
+        }
+        window.location.reload();
+      });
+
+    // TODO: FIX THE SHARE LINK AND ADD THE SHARE LINK TO ROUTER
+    document
+      .getElementById("create-share-form")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const folderId = document.getElementById("share-folder-id").value;
+        const expiryDays = parseInt(
+          document.getElementById("expiry").value,
+          10
+        );
+        const currentDate = new Date();
+        const expiresAt = new Date(
+          currentDate.setDate(currentDate.getDate() + expiryDays)
+        );
+        const formData = {
+          folderId,
+          expiresAt,
+        };
+        const response = await fetch("/system/share/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        const result = await response.json();
+        console.log("This is the result:", await result);
+
+        const homeUrl = window.location.origin;
+        if (result.shared) {
+          //If result exist then we close the toggleShareModal
+          toggleShareModal();
+          const shareLinkContent =
+            document.getElementById("share-link-content");
+          shareLinkContent.innerHTML = `
+          <h3>Click the blue box to copy the link</h3>
+          <div class="click-to-copy" onclick="copyToClipboard('#copyText')">
+            <input type="text" 
+            value="${homeUrl}/system/shared/${result.shared.id}" 
+            id="copyText" 
+            readonly 
+            style="width: 100%; " />
+          </div>
+          <br/>
+           <br/>
+          <a href="/system/shared/${result.shared.id}" style="text-decoration: none; padding: 1rem; color: black;">Click Here To Visit Shared Link</a>
+
+          `;
+          console.log("Result in HTML", result);
+          toggleShareLinkModal();
+          //TODO: Here we want to send the user to the share link page
+          //Open a modal that shares the link
+        }
+      });
+  </script>
+</html>
