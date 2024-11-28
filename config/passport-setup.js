@@ -37,7 +37,6 @@ passport.deserializeUser(async (id, done) => {
     }
     done(null, user);
   } catch (err) {
-    console.log("Error deserializing user ", err);
     done(err);
   }
 });
@@ -55,7 +54,6 @@ passport.use(
         if (!existing) {
           return done(null, false, { message: "Invalid email or password" });
         }
-        console.log("Email exist when loggin in", existing);
         const validPw = await validatePw(existing.password, password);
         if (!validPw) {
           return done(null, false, { message: "Invalid email or password" });
@@ -77,10 +75,8 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log("Entered past github strategy: ", profile);
         const existing = await existingGithubUser(profile.id);
         if (existing) {
-          console.log("Github user exist: ", existing);
           done(null, existing);
         } else {
           let data;
@@ -91,9 +87,7 @@ passport.use(
               },
             });
             const emails = await res.json();
-            console.log("Emails after fetching from github: ", emails);
             const primaryEmail = emails.find((email) => email.primary).email;
-            console.log("Primary email is ", primaryEmail);
             data = {
               email: primaryEmail,
               name: profile.displayName,
@@ -113,7 +107,6 @@ passport.use(
             };
           }
           const create = await createGithubUser(data);
-          console.log("Create github user: ", create);
           done(null, create);
         }
       } catch (err) {
@@ -133,24 +126,15 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log("Entered past google strategy", profile);
         const existing = await existingGoogleUser(profile.id);
         if (existing) {
-          console.log("Google user exists: ", existing);
           done(null, existing);
         } else {
-          console.log(
-            "This is google user data: ",
-            profile,
-            accessToken,
-            refreshToken
-          );
           const create = await createGoogleUser(
             profile,
             accessToken,
             refreshToken
           );
-          console.log("Created google user: ", create);
           done(null, create);
         }
       } catch (err) {

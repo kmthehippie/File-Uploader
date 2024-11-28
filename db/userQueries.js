@@ -32,12 +32,14 @@ exports.createGoogleUser = async function (
       googleRefreshToken: data.googleRefreshToken,
     },
   });
+  return user;
 };
 
 exports.createGithubUser = async function (data) {
   const user = await prisma.user.create({
     data: data,
   });
+  return user;
 };
 
 exports.existingUserEmail = async function (email) {
@@ -73,6 +75,7 @@ exports.existingGithubUser = async function (githubId) {
       githubId: githubId,
     },
   });
+  console.log("Query found existing github user ", existingUser);
   return existingUser;
 };
 

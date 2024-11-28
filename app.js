@@ -32,7 +32,9 @@ app.use(
       tableName: "Session",
     }),
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure:
+        process.env.NODE_ENV === "production" &&
+        process.env.SECURE_COOKIE === "true",
       maxAge: 24 * 60 * 60 * 1000, //ms 1day
     },
   })
