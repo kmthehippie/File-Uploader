@@ -39,8 +39,6 @@ exports.GetLogout = asyncHandler(async (req, res, next) => {
 
 exports.GetRegister = asyncHandler(async (req, res, next) => {
   try {
-    await deleteAllUser();
-    await deleteAllSessions();
     res.render("register");
   } catch (e) {
     console.error(`Error Getting Login: ${e.message}`);
